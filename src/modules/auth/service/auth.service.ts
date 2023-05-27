@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {
   TCheckIfUserExistRequest,
   TConnectWalletRequest,
@@ -8,14 +13,21 @@ import {
   Response,
   ResponseService,
 } from 'src/core/interfaces/response/reponses';
-import { ICheckUserResponse } from 'src/core/interfaces/response/user.response';
+import {
+  ICheckUserResponse,
+  IUserResponseForEvent,
+} from 'src/core/interfaces/response/user.response';
 import { UserDTO } from 'src/core/interfaces/entities/user/user.dto';
 import { EncryptionService } from 'src/core/services/encryption/encryption.service';
 import { UserService } from 'src/core/services/user/user.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { ClientKafka } from '@nestjs/microservices';
+import { UserEventEnum } from 'src/core/interfaces/event';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectModel('USER_KAFKA_CLIENT') private readonly userClient: ClientKafka,
     private readonly userService: UserService,
     private readonly encryptionService: EncryptionService,
   ) {}
@@ -70,16 +82,24 @@ export class AuthService {
       });
 
       if (createdUserResponse.statusCode !== HttpStatus.OK) {
-        throw new UnauthorizedException({
-          statusCode: HttpStatus.NOT_MODIFIED,
-          errors: createdUserResponse.errors,
-        } as Response<ErrorInterface>);
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_MODIFIED,
+            errors: createdUserResponse.errors,
+          } as Response<ErrorInterface>,
+          HttpStatus.NOT_MODIFIED,
+        );
       }
 
       createdUserResponse.data.personal.setAccessToken(
         this.encryptionService.encryptToken(
           createdUserResponse.data.toAuthenticatedUser(),
         ),
+      );
+
+      this.userClient.emit<IUserResponseForEvent>(
+        UserEventEnum.userconnectwallet,
+        createdUserResponse.data.toResponseForEvent(),
       );
 
       return createdUserResponse;

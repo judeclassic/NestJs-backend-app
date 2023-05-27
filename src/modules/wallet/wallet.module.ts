@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PayoutSchema } from 'src/core/interfaces/entities/payout/payout.schema';
 import { TransactionSchema } from 'src/core/interfaces/entities/transaction/transaction.schema';
 import { UserSchema } from 'src/core/interfaces/entities/user/user.schema';
@@ -14,6 +15,21 @@ import { WithdrawService } from './service/withdraw/withdraw.service';
 
 @Module({
   imports: [
+    ClientsModule.register([
+      {
+        name: 'TRANSACTION_CLIENT',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'user',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'user-consumer',
+          },
+        },
+      },
+    ]),
     MongooseModule.forFeature([
       {
         name: 'Transaction',

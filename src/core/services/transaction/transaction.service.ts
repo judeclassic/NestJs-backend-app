@@ -1,11 +1,14 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginateModel } from 'mongoose';
-import { TViewAllMyTransactionRequest } from 'src/core/interfaces/request/transaction.request';
+import {
+  TUpdateTransactionRequest,
+  TViewAllMyTransactionRequest,
+} from 'src/core/interfaces/request/transaction.request';
 import { ResponseService } from 'src/core/interfaces/response/reponses';
 import { ITransactionsResponse } from 'src/core/interfaces/response/wallet.reponse';
-import ITransaction from 'src/core/interfaces/entities/transaction/transaction';
 import TransactionDto from 'src/core/interfaces/entities/transaction/transaction.dto';
+import ITransaction from 'src/core/interfaces/entities/transaction/transaction';
 
 @Injectable()
 export class TransactionService {
@@ -41,7 +44,6 @@ export class TransactionService {
     async (transaction: Partial<ITransaction>) => {
       try {
         const dataResponse = await this.transactionModel.findOne(transaction);
-        console.log(dataResponse);
         if (dataResponse) {
           const data = new TransactionDto(dataResponse);
           return { statusCode: HttpStatus.OK, data };
@@ -95,29 +97,29 @@ export class TransactionService {
     }
   };
 
-  // updateTransactionStatus = async (
-  //   {
-  //     sender_wallet_address,
-  //     transaction_id,
-  //   }: { sender_wallet_address: string; transaction_id: string },
-  //   modifier: { status: TransactionStatusEnum },
-  // ) => {
-  //   try {
-  //     const dataResponse = await this.TransactionDBModel.findOneAndUpdate(
-  //       { sender_wallet_address, transaction_id },
-  //       { transaction_status: modifier.status },
-  //     );
-  //     if (dataResponse) {
-  //       const data = new TransactionDto(dataResponse);
-  //       return { status: true as const, data };
-  //     } else {
-  //       return { status: false as const, error: "Couldn't update user" };
-  //     }
-  //   } catch (error) {
-  //     return {
-  //       status: false as const,
-  //       error: (error ?? 'Unable to save user information to DB') as string,
-  //     };
-  //   }
-  // };
+  updateTransaction: ResponseService<
+    TUpdateTransactionRequest,
+    TransactionDto
+  > = async ({ transaction_id, amount, transaction_status }) => {
+    try {
+      const dataResponse = await this.transactionModel.findOneAndUpdate(
+        { transaction_id },
+        { transaction_status, amount },
+      );
+      if (dataResponse) {
+        const data = new TransactionDto(dataResponse);
+        return { statusCode: HttpStatus.OK, data };
+      } else {
+        return {
+          statusCode: HttpStatus.BAD_REQUEST,
+          errors: [{ message: "Couldn't update this transaction" }],
+        };
+      }
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        errors: [{ message: "Couldn't update this transaction" }],
+      };
+    }
+  };
 }

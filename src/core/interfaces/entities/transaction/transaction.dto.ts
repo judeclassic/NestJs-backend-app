@@ -1,3 +1,4 @@
+import { ITransactionForEvent } from '../../response/wallet.reponse';
 import ITransaction, {
   CoinType,
   TransactionStatusEnum,
@@ -41,6 +42,20 @@ class TransactionDto implements ITransaction {
       sender_public_key: this.sender_public_key,
       master_wallet_address: this.master_wallet_address,
     } as ITransaction;
+  };
+
+  toResponseForEvent = () => {
+    return {
+      _id: this._id,
+      transaction_id: this.transaction_id,
+      amount: this.amount,
+      coin_type: this.coin_type,
+      coin_name: this.coin_name,
+      sender_wallet_address: this.sender_wallet_address,
+      transaction_type: this.transaction_type,
+      sender_public_key: this.sender_public_key,
+      master_wallet_address: this.master_wallet_address,
+    } as ITransactionForEvent;
   };
 }
 

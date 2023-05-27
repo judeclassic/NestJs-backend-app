@@ -1,4 +1,7 @@
-import { IPersonalInformation, IWalletInformation } from '../entities/user/user';
+import {
+  IPersonalInformation,
+  IWalletInformation,
+} from '../entities/user/user';
 
 export interface ICheckUserResponse {
   is_user_existing: boolean;
@@ -11,4 +14,11 @@ export interface IUserResponse {
   readonly other_wallets: IWalletInformation[];
   readonly created_at: Date;
   updated_at: Date;
+}
+
+export interface IUserResponseForEvent {
+  readonly wallet_address: string;
+  readonly public_key: string;
+  readonly btc_wallet: IWalletInformation;
+  readonly other_wallets: IWalletInformation[];
 }

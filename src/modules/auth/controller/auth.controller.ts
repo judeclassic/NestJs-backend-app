@@ -17,7 +17,6 @@ import { AuthService } from '../service/auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @HttpCode(HttpStatus.OK)
   @Post('connect')
   async connectToWallet(
     @Body() request: ConnectWalletRequestDto,
@@ -26,7 +25,7 @@ export class AuthController {
     const user = await this.authService.connectWalletAddress(request);
     if (user.statusCode === HttpStatus.OK) {
       response.setHeader('authorization', user.data.personal.access_token);
-      return user.data.toResponse();
+      return { statusCode: HttpStatus.OK, data: user.data.toResponse() };
     }
     return user;
   }

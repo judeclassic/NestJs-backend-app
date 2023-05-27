@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { EventPattern } from '@nestjs/microservices';
 import { Request } from 'express';
-import { TViewAllMyTransactionRequest } from 'src/core/interfaces/request/transaction.request';
+import { TransactionEventEnum } from 'src/core/interfaces/event';
+import {
+  TUpdateTransactionRequest,
+  TViewAllMyTransactionRequest,
+} from 'src/core/interfaces/request/transaction.request';
 import {
   CancelWithdrawalRequestDto,
   FundBTCWalletRequestDto,
@@ -91,5 +96,10 @@ export class WalletController {
     const jwToken = request.headers.authorization;
     const authUser = this.encryptionService.verifyBearerToken(jwToken);
     return this.walletServive.viewAllMyTransaction(requestBody, authUser);
+  }
+
+  @EventPattern(TransactionEventEnum.transaction_updated)
+  async updateMyTransaction(requestBody: TUpdateTransactionRequest) {
+    return this.depositService.updateTransactionStatus(requestBody);
   }
 }

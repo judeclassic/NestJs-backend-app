@@ -1,4 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
+import { TransactionStatusEnum } from '../entities/transaction/transaction';
 
 export type TRefreshTransactionRequest = {
   transaction_id: string;
@@ -33,6 +34,13 @@ export class ViewAllMyTransactionRequestDto
   @IsNotEmpty()
   limit: number;
 }
+
+export type TUpdateTransactionRequest = {
+  transaction_id: string;
+  amount: number;
+  wallet_address: string;
+  transaction_status: TransactionStatusEnum;
+};
 
 export type TViewAllTransactionRequest = {
   page: number;

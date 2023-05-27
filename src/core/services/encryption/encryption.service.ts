@@ -20,6 +20,7 @@ export class EncryptionService {
     return this.jwtService.sign(data, {
       expiresIn: jwtConstants.expiresIn,
       secret: jwtConstants.secret,
+      algorithm: 'HS256',
     });
   };
 

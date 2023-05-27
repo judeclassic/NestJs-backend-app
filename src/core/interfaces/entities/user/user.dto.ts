@@ -1,4 +1,7 @@
-import { IUserResponse } from '../../response/user.response';
+import {
+  IUserResponse,
+  IUserResponseForEvent,
+} from '../../response/user.response';
 import { CoinType } from '../transaction/transaction';
 import {
   IAuthenticatedUser,
@@ -98,6 +101,17 @@ export class UserDTO implements IUser {
       created_at: this.created_at,
       updated_at: this.updated_at,
     } as IUserResponse;
+  };
+
+  public toResponseForEvent = () => {
+    return {
+      wallet_address: this.personal.wallet_address,
+      public_key: this.personal.public_key,
+      btc_wallet: this.btc_wallet.toResponse(),
+      other_wallets: this.other_wallets.map((other_wallet) =>
+        other_wallet.toResponse(),
+      ),
+    } as IUserResponseForEvent;
   };
 
   public toAuthenticatedUser = () => {

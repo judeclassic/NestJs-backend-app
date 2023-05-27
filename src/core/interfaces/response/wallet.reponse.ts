@@ -6,6 +6,7 @@ export interface ITransactionsResponse {
   totalTransactions: number;
   hasNext: boolean;
 }
+export type ITransactionForEvent = ITransaction;
 
 export interface IPayoutsResponse {
   payouts: IPayout[];

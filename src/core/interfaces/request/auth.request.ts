@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsBtcAddress, IsNotEmpty } from 'class-validator';
 
 export type TConnectWalletRequest = {
   wallet_address: string;

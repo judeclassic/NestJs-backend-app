@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TConnectWalletRequest } from 'src/core/interfaces/request/auth.request';
 import { ResponseService } from 'src/core/interfaces/response/reponses';
-import { IUser, IWalletInformation } from 'src/core/interfaces/entities/user/user';
+import {
+  IUser,
+  IWalletInformation,
+} from 'src/core/interfaces/entities/user/user';
 import {
   UserDTO,
   WalletInformationDto,
@@ -69,7 +72,8 @@ export class UserService {
         {
           'personal.wallet_address': wallet_address,
         },
-        { pending_balance: account.amount },
+        { 'btc_wallet.pending_balance': account.amount },
+        { new: true },
       );
       if (dataResponse) {
         const data = new UserDTO(dataResponse);
@@ -90,14 +94,13 @@ export class UserService {
     account: { amount: number },
   ) => {
     try {
-      const dataResponse = await this.userModel.findOneAndUpdate(
-        {
-          'personal.wallet_address': wallet_address,
-        },
-        { account_balance: account.amount },
-      );
+      const dataResponse = await this.userModel.findOne({
+        'personal.wallet_address': wallet_address,
+      });
       if (dataResponse) {
-        const data = new UserDTO(dataResponse);
+        dataResponse.btc_wallet.account_balance = account.amount;
+        const response = await dataResponse.save();
+        const data = new UserDTO(response);
         return { status: true as const, data };
       } else {
         return { status: false as const, error: "Couldn't update user" };
@@ -122,10 +125,11 @@ export class UserService {
         const indexOfFindings = dataResponse.other_wallets.findIndex(
           (wallet) => wallet.coin_name === searchedInfo.coin_name,
         );
-        if (indexOfFindings < 0) {
-          dataResponse.other_wallets[indexOfFindings].pending_balance =
+        if (indexOfFindings >= 0) {
+          dataResponse.other_wallets[indexOfFindings].pending_balance +=
             account.amount;
         } else {
+          console.log('Not me', indexOfFindings);
           dataResponse.other_wallets.push({
             account_balance: 0,
             pending_balance: account.amount,
@@ -141,6 +145,7 @@ export class UserService {
         return { status: false as const, error: "Couldn't update user" };
       }
     } catch (error) {
+      console.log(error);
       return {
         status: false as const,
         error: (error ?? 'Unable to save user information to DB') as string,
