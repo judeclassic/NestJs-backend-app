@@ -20,14 +20,13 @@ import {
 import { UserDTO } from 'src/core/interfaces/entities/user/user.dto';
 import { EncryptionService } from 'src/core/services/encryption/encryption.service';
 import { UserService } from 'src/core/services/user/user.service';
-import { InjectModel } from '@nestjs/mongoose';
-import { ClientKafka } from '@nestjs/microservices';
 import { UserEventEnum } from 'src/core/interfaces/event';
+import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel('USER_KAFKA_CLIENT') private readonly userClient: ClientKafka,
+    private readonly producerService: ProducerService,
     private readonly userService: UserService,
     private readonly encryptionService: EncryptionService,
   ) {}
@@ -97,8 +96,8 @@ export class AuthService {
         ),
       );
 
-      this.userClient.emit<IUserResponseForEvent>(
-        UserEventEnum.userconnectwallet,
+      this.producerService.sendMessage<IUserResponseForEvent>(
+        UserEventEnum.user_connected_wallet,
         createdUserResponse.data.toResponseForEvent(),
       );
 

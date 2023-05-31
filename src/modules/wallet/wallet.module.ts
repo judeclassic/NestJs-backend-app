@@ -12,24 +12,12 @@ import { WalletController } from './controller/wallet.controller';
 import { DepositService } from './service/deposit/deposit.service';
 import { WalletService } from './service/wallet.service';
 import { WithdrawService } from './service/withdraw/withdraw.service';
+import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
+import { ConsumerService } from 'src/core/services/kafka/consumer/consumer.service';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'TRANSACTION_CLIENT',
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: 'user',
-            brokers: ['localhost:9092'],
-          },
-          consumer: {
-            groupId: 'user-consumer',
-          },
-        },
-      },
-    ]),
     MongooseModule.forFeature([
       {
         name: 'Transaction',
@@ -47,12 +35,15 @@ import { WithdrawService } from './service/withdraw/withdraw.service';
   ],
   providers: [
     TransactionService,
+    ConfigService,
     DepositService,
     WithdrawService,
     WalletService,
     PayoutService,
     UserService,
     EncryptionService,
+    ProducerService,
+    ConsumerService,
   ],
   controllers: [WalletController],
 })

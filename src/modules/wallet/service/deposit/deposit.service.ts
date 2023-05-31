@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   TFundBTCWalletRequest,
   TFundOtherWalletRequest,
@@ -16,10 +16,10 @@ import ITransaction, {
 import { TransactionService } from 'src/core/services/transaction/transaction.service';
 import { UserService } from 'src/core/services/user/user.service';
 import { TUpdateTransactionRequest } from 'src/core/interfaces/request/transaction.request';
-import { ClientKafka } from '@nestjs/microservices';
 import TransactionDto from 'src/core/interfaces/entities/transaction/transaction.dto';
 import { UserEventEnum } from 'src/core/interfaces/event';
 import { ITransactionForEvent } from 'src/core/interfaces/response/wallet.reponse';
+import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
 
 const ERROR_UNABLE_TRANSACTION: ErrorInterface = {
   message: 'unable to save your transaction on the blockchain',
@@ -34,8 +34,7 @@ const ERROR_DUPLICATED_TRANSACTION: ErrorInterface = {
 @Injectable()
 export class DepositService {
   constructor(
-    @Inject('TRANSACTION_CLIENT')
-    private readonly transactionClient: ClientKafka,
+    private readonly producerService: ProducerService,
     private readonly transactionService: TransactionService,
     private readonly userService: UserService,
   ) {}
@@ -81,14 +80,14 @@ export class DepositService {
         );
       }
 
-      this.transactionClient.emit<ITransactionForEvent>(
-        UserEventEnum.user_fund_wallet,
+      this.producerService.sendMessage<ITransactionForEvent>(
+        UserEventEnum.user_deposited,
         transaction.data.toResponseForEvent(),
       );
 
-      this.userService.updateBTCWalletPendingAmount(user.wallet_address, {
-        amount: transaction.data.amount,
-      });
+      // this.userService.updateBTCWalletPendingAmount(user.wallet_address, {
+      //   amount: transaction.data.amount,
+      // });
 
       return transaction;
     };
@@ -136,15 +135,15 @@ export class DepositService {
       );
     }
 
-    this.transactionClient.emit<ITransactionForEvent>(
-      UserEventEnum.user_fund_wallet,
+    this.producerService.sendMessage<ITransactionForEvent>(
+      UserEventEnum.user_deposited,
       transaction.data.toResponseForEvent(),
     );
 
-    this.userService.updateOtherWalletPendingAmount(
-      { wallet_address: user.wallet_address, coin_name },
-      { amount: transaction.data.amount },
-    );
+    // this.userService.updateOtherWalletPendingAmount(
+    //   { wallet_address: user.wallet_address, coin_name },
+    //   { amount: transaction.data.amount },
+    // );
 
     return transaction;
   };

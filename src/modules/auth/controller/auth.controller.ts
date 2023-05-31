@@ -24,7 +24,7 @@ export class AuthController {
   ) {
     const user = await this.authService.connectWalletAddress(request);
     if (user.statusCode === HttpStatus.OK) {
-      response.setHeader('authorization', user.data.personal.access_token);
+      response.cookie('authorization', user.data.personal.access_token);
       return { statusCode: HttpStatus.OK, data: user.data.toResponse() };
     }
     return user;
