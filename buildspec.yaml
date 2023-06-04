@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands: 
+      - ls
+  build:
+    commands:
+      # - docker build -t satsswap_user -f ./ .
+      # - docker tag satsswap_user:latest 300564742707.dkr.ecr.ap-southeast-1.amazonaws.com/satsswap_user:latest
+      - ls
+  post_build:
+    commands:
+      # - docker push 300564742707.dkr.ecr.ap-southeast-1.amazonaws.com/satsswap_user:latest
+      - ls
