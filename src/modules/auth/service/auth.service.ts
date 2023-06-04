@@ -100,6 +100,8 @@ export class AuthService {
         createdUserResponse.data.toModel(),
       );
 
+      console.log('wprking');
+
       return createdUserResponse;
     };
 
