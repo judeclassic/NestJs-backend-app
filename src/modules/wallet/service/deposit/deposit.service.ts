@@ -20,6 +20,7 @@ import TransactionDto from 'src/core/interfaces/entities/transaction/transaction
 import { UserEventEnum } from 'src/core/interfaces/event';
 import { ITransactionForEvent } from 'src/core/interfaces/response/wallet.reponse';
 import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
+import { VerificationService } from 'src/core/services/verification/verification.service';
 
 const ERROR_UNABLE_TRANSACTION: ErrorInterface = {
   message: 'unable to save your transaction on the blockchain',
@@ -35,6 +36,7 @@ const ERROR_DUPLICATED_TRANSACTION: ErrorInterface = {
 export class DepositService {
   constructor(
     private readonly producerService: ProducerService,
+    private readonly verificationService: VerificationService,
     private readonly transactionService: TransactionService,
     private readonly userService: UserService,
   ) {}
@@ -54,16 +56,33 @@ export class DepositService {
         );
       }
 
+      const verifiedTransaction =
+        await this.verificationService.verifyPaymentOnBtcWallet({
+          transaction_id: transaction_id,
+          wallet_address: user.wallet_address,
+          amount: amount,
+        });
+
+      if (verifiedTransaction.statusCode !== HttpStatus.OK) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            errors: verifiedTransaction.errors,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const transactionRequest: Omit<ITransaction, '_id'> = {
         transaction_id,
         amount: amount,
         coin_type: CoinType.BTC,
         coin_name: CoinType.BTC,
-        transaction_status: TransactionStatusEnum.pending,
+        transaction_status: verifiedTransaction.data.status,
         sender_wallet_address: user.wallet_address,
         transaction_type: TransactionType.deposit,
         sender_public_key: user.public_key,
-        master_wallet_address: '',
+        master_wallet_address: verifiedTransaction.data.master_wallet,
       };
 
       const transaction = await this.transactionService.createTransaction(
@@ -85,10 +104,6 @@ export class DepositService {
         transaction.data.toResponseForEvent(),
       );
 
-      // this.userService.updateBTCWalletPendingAmount(user.wallet_address, {
-      //   amount: transaction.data.amount,
-      // });
-
       return transaction;
     };
 
@@ -109,6 +124,25 @@ export class DepositService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const verifiedTransaction =
+      await this.verificationService.verifyPaymentOnBRC20({
+        transaction_id: transaction_id,
+        wallet_address: user.wallet_address,
+        amount: amount,
+        coin_name,
+      });
+
+    if (verifiedTransaction.statusCode !== HttpStatus.OK) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          errors: verifiedTransaction.errors,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const transactionRequest: Omit<ITransaction, '_id'> = {
       transaction_id,
       amount: amount,

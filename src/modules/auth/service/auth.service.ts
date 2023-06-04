@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  IUserForEventUpdate,
   TCheckIfUserExistRequest,
   TConnectWalletRequest,
 } from 'src/core/interfaces/request/auth.request';
@@ -13,15 +14,13 @@ import {
   Response,
   ResponseService,
 } from 'src/core/interfaces/response/reponses';
-import {
-  ICheckUserResponse,
-  IUserResponseForEvent,
-} from 'src/core/interfaces/response/user.response';
+import { ICheckUserResponse } from 'src/core/interfaces/response/user.response';
 import { UserDTO } from 'src/core/interfaces/entities/user/user.dto';
 import { EncryptionService } from 'src/core/services/encryption/encryption.service';
 import { UserService } from 'src/core/services/user/user.service';
 import { UserEventEnum } from 'src/core/interfaces/event';
 import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
+import { IUser } from 'src/core/interfaces/entities/user/user';
 
 @Injectable()
 export class AuthService {
@@ -96,11 +95,41 @@ export class AuthService {
         ),
       );
 
-      this.producerService.sendMessage<IUserResponseForEvent>(
+      this.producerService.sendMessage<IUser>(
         UserEventEnum.user_connected_wallet,
-        createdUserResponse.data.toResponseForEvent(),
+        createdUserResponse.data.toModel(),
       );
 
       return createdUserResponse;
     };
+
+  updateUser: ResponseService<IUserForEventUpdate, boolean> = async (
+    userRequest,
+  ) => {
+    const foundUserReponse = await this.userService.findOneByWalletAddress(
+      userRequest.wallet_address,
+    );
+
+    if (foundUserReponse.statusCode === HttpStatus.OK) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.NOT_MODIFIED,
+        errors: [],
+      } as Response<ErrorInterface>);
+    }
+
+    const updatedUserResponse =
+      await this.userService.updateUserWalletsWithEvents(userRequest);
+
+    if (updatedUserResponse.statusCode !== HttpStatus.OK) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.NOT_MODIFIED,
+        errors: updatedUserResponse.errors,
+      } as Response<ErrorInterface>);
+    }
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: true,
+    };
+  };
 }

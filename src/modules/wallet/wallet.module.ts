@@ -15,6 +15,7 @@ import { WithdrawService } from './service/withdraw/withdraw.service';
 import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
 import { ConsumerService } from 'src/core/services/kafka/consumer/consumer.service';
 import { ConfigService } from '@nestjs/config';
+import { VerificationService } from 'src/core/services/verification/verification.service';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ConfigService } from '@nestjs/config';
     EncryptionService,
     ProducerService,
     ConsumerService,
+    VerificationService,
   ],
   controllers: [WalletController],
 })

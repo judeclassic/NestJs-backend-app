@@ -8,19 +8,20 @@ export class ProducerService {
   private producer: Producer;
 
   constructor(private readonly configService: ConfigService) {
-    const kafka = new Kafka({
-      brokers: [this.configService.get('KAFKA_BROKER')],
-    });
-    this.producer = kafka.producer();
-    this.producer.connect().then(() => {
-      console.log('Kafka producer is ready');
-    });
+    // const kafka = new Kafka({
+    //   brokers: [this.configService.get('KAFKA_BROKER')],
+    //   clientId: 'my-app',
+    // });
+    // this.producer = kafka.producer();
+    // this.producer.connect().then(() => {
+    //   console.log('Kafka producer is ready');
+    // });
   }
 
   sendMessage = async <T>(topic: UserEventEnum, message: T) => {
-    return this.producer.send({
-      topic,
-      messages: [{ value: JSON.stringify(message) }],
-    });
+    // return this.producer.send({
+    //   topic,
+    //   messages: [{ value: JSON.stringify(message) }],
+    // });
   };
 }

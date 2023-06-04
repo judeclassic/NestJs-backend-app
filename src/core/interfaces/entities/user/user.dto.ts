@@ -90,6 +90,19 @@ export class UserDTO implements IUser {
     this.updated_at = props.updated_at;
   }
 
+  public toModel = () => {
+    return {
+      _id: this._id,
+      personal: this.personal.toResponse(),
+      btc_wallet: this.btc_wallet.toResponse(),
+      other_wallets: this.other_wallets.map((other_wallet) =>
+        other_wallet.toResponse(),
+      ),
+      created_at: this.created_at,
+      updated_at: this.updated_at,
+    } as IUser;
+  };
+
   public toResponse = () => {
     return {
       id: this._id,

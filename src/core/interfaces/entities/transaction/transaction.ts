@@ -7,6 +7,7 @@ export enum TransactionStatusEnum {
   pending = 'PENDING',
   successful = 'SUCCESSFUL',
   failed = 'FAILED',
+  processing = 'PROCESSING',
 }
 
 export enum TransactionType {

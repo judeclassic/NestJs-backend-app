@@ -9,6 +9,7 @@ import { EncryptionService } from 'src/core/services/encryption/encryption.servi
 import { UserSchema } from 'src/core/interfaces/entities/user/user.schema';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
+import { ConsumerService } from 'src/core/services/kafka/consumer/consumer.service';
 
 @Module({
   imports: [
@@ -39,7 +40,13 @@ import { ProducerService } from 'src/core/services/kafka/producer/kafka.service'
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, EncryptionService, ProducerService],
+  providers: [
+    AuthService,
+    UserService,
+    EncryptionService,
+    ConsumerService,
+    ProducerService,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

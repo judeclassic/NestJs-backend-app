@@ -9,6 +9,7 @@ export enum UserEventEnum {
   user_request_payout = 'user_request_payout',
   user_cancel_payout = 'user_cancel_payout',
   user_deposited = 'user_deposited',
+  update_user = 'update_user',
 }
 
 export enum SwapEventEnum {

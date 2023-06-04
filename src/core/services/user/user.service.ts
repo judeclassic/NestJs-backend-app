@@ -1,7 +1,10 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { TConnectWalletRequest } from 'src/core/interfaces/request/auth.request';
+import {
+  IUserForEventUpdate,
+  TConnectWalletRequest,
+} from 'src/core/interfaces/request/auth.request';
 import { ResponseService } from 'src/core/interfaces/response/reponses';
 import {
   IUser,
@@ -187,6 +190,36 @@ export class UserService {
       return {
         status: false as const,
         error: (error ?? 'Unable to save user information to DB') as string,
+      };
+    }
+  };
+
+  updateUserWalletsWithEvents = async (user: IUserForEventUpdate) => {
+    try {
+      const dataResponse = await this.userModel.findOne({
+        'personal.wallet_address': user.wallet_address,
+      });
+      if (dataResponse) {
+        dataResponse.btc_wallet.account_balance +=
+          user.base_wallet.account_balance ?? 0;
+        dataResponse.other_wallets[
+          dataResponse.other_wallets.findIndex(
+            (index) => index.coin_id === user.other_wallet.coin_id,
+          )
+        ].account_balance += user?.other_wallet?.account_balance ?? 0;
+        await dataResponse.save();
+        const data = new UserDTO(dataResponse);
+        return { statusCode: HttpStatus.OK, data };
+      } else {
+        return {
+          statusCode: HttpStatus.NOT_FOUND,
+          errors: [{ message: 'could not update user information' }],
+        };
+      }
+    } catch (error) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        errors: [{ message: 'could not update user information' }],
       };
     }
   };

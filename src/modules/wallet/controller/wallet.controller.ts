@@ -1,14 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  OnModuleInit,
-  Post,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
-import { TransactionEventEnum } from 'src/core/interfaces/event';
 import { TViewAllMyTransactionRequest } from 'src/core/interfaces/request/transaction.request';
 import {
   CancelWithdrawalRequestDto,
@@ -16,40 +7,18 @@ import {
   FundOtherWalletRequestDto,
 } from 'src/core/interfaces/request/wallet.request';
 import { EncryptionService } from 'src/core/services/encryption/encryption.service';
-import { ConsumerService } from 'src/core/services/kafka/consumer/consumer.service';
 import { DepositService } from '../service/deposit/deposit.service';
 import { WalletService } from '../service/wallet.service';
 import { WithdrawService } from '../service/withdraw/withdraw.service';
 
 @Controller('wallet')
-export class WalletController implements OnModuleInit {
+export class WalletController {
   constructor(
     private readonly depositService: DepositService,
     private readonly withdrawService: WithdrawService,
     private readonly walletServive: WalletService,
     private readonly encryptionService: EncryptionService,
-    private readonly consumerService: ConsumerService,
   ) {}
-
-  onModuleInit() {
-    this.consumerService.consume({
-      topic: { topics: [TransactionEventEnum.transaction_updated] },
-      config: { groupId: 'consumer' },
-      onMessage: async (message) => {
-        const transaction = JSON.parse(message.value.toString());
-        this.depositService.updateTransactionStatus(transaction);
-      },
-    });
-
-    this.consumerService.consume({
-      topic: { topics: [TransactionEventEnum.transaction_updated] },
-      config: { groupId: 'consumer' },
-      onMessage: async (message) => {
-        const transaction = JSON.parse(message.value.toString());
-        this.depositService.updateTransactionStatus(transaction);
-      },
-    });
-  }
 
   @Post('fund-btc')
   async fundBtcWallet(
