@@ -15,6 +15,9 @@ const TransactionSchema = new Schema<ITransaction>({
   coin_type: {
     type: String,
   },
+  coin_id: {
+    type: String,
+  },
   coin_name: {
     type: String,
   },

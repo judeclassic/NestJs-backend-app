@@ -19,7 +19,7 @@ export interface IUser {
   readonly _id: string;
   readonly personal: IPersonalInformation;
   readonly btc_wallet: IWalletInformation;
-  readonly other_wallets: IWalletInformation[];
+  other_wallets: IWalletInformation[];
   readonly created_at: Date;
   updated_at: Date;
 }

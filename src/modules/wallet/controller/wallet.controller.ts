@@ -5,6 +5,8 @@ import {
   CancelWithdrawalRequestDto,
   FundBTCWalletRequestDto,
   FundOtherWalletRequestDto,
+  WithdrawBTCWalletRequestDto,
+  WithdrawBRC20WalletRequestDto,
 } from 'src/core/interfaces/request/wallet.request';
 import { EncryptionService } from 'src/core/services/encryption/encryption.service';
 import { DepositService } from '../service/deposit/deposit.service';
@@ -42,7 +44,7 @@ export class WalletController {
 
   @Post('withdraw-btc')
   async withdrawBtcFromWallet(
-    @Body() requestBody: FundOtherWalletRequestDto,
+    @Body() requestBody: WithdrawBTCWalletRequestDto,
     @Req() request: Request,
   ) {
     const jwToken = request.headers.authorization;
@@ -52,7 +54,7 @@ export class WalletController {
 
   @Post('withdraw-brc-20')
   async withdrawBrc20FromWallet(
-    @Body() requestBody: FundOtherWalletRequestDto,
+    @Body() requestBody: WithdrawBRC20WalletRequestDto,
     @Req() request: Request,
   ) {
     const jwToken = request.headers.authorization;

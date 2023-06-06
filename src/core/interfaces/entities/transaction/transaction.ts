@@ -21,6 +21,7 @@ interface ITransaction {
   readonly transaction_id: string;
   readonly amount: number;
   readonly coin_type: CoinType;
+  readonly coin_id: string;
   readonly coin_name: string;
   readonly transaction_status: TransactionStatusEnum;
   readonly sender_wallet_address: string;

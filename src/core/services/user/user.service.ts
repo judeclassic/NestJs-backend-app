@@ -101,7 +101,7 @@ export class UserService {
         'personal.wallet_address': wallet_address,
       });
       if (dataResponse) {
-        dataResponse.btc_wallet.account_balance = account.amount;
+        dataResponse.btc_wallet.account_balance += account.amount;
         const response = await dataResponse.save();
         const data = new UserDTO(response);
         return { status: true as const, data };
@@ -117,7 +117,7 @@ export class UserService {
   };
 
   updateOtherWalletPendingAmount = async (
-    searchedInfo: { wallet_address: string; coin_name: string },
+    searchedInfo: { wallet_address: string; coin_id: string },
     account: { amount: number },
   ) => {
     try {
@@ -126,19 +126,18 @@ export class UserService {
       });
       if (dataResponse) {
         const indexOfFindings = dataResponse.other_wallets.findIndex(
-          (wallet) => wallet.coin_name === searchedInfo.coin_name,
+          (wallet) => wallet.coin_id === searchedInfo.coin_id,
         );
         if (indexOfFindings >= 0) {
           dataResponse.other_wallets[indexOfFindings].pending_balance +=
             account.amount;
         } else {
-          console.log('Not me', indexOfFindings);
           dataResponse.other_wallets.push({
             account_balance: 0,
             pending_balance: account.amount,
             network: '',
-            coin_name: searchedInfo.coin_name,
-            coin_id: '',
+            coin_name: dataResponse.other_wallets[indexOfFindings].coin_name,
+            coin_id: searchedInfo.coin_id,
           });
         }
         await dataResponse.save();
@@ -157,7 +156,11 @@ export class UserService {
   };
 
   updateOtherWalletMainAmount = async (
-    searchedInfo: { wallet_address: string; coin_name: string },
+    searchedInfo: {
+      wallet_address: string;
+      coin_id: string;
+      coin_name: string;
+    },
     account: { amount: number },
   ) => {
     try {
@@ -166,19 +169,24 @@ export class UserService {
       });
       if (dataResponse) {
         const indexOfFindings = dataResponse.other_wallets.findIndex(
-          (wallet) => wallet.coin_name === searchedInfo.coin_name,
+          (wallet) => wallet.coin_id === searchedInfo.coin_id,
         );
-        if (indexOfFindings < 0) {
-          dataResponse.other_wallets[indexOfFindings].account_balance =
+        if (indexOfFindings >= 0) {
+          dataResponse.other_wallets[indexOfFindings].account_balance +=
             account.amount;
         } else {
-          dataResponse.other_wallets.push({
-            account_balance: account.amount,
-            pending_balance: 0,
-            network: '',
-            coin_name: searchedInfo.coin_name,
-            coin_id: '',
-          });
+          console.log('hahahaah', dataResponse, indexOfFindings);
+          dataResponse.other_wallets = [
+            ...dataResponse.other_wallets,
+            {
+              account_balance: account.amount,
+              pending_balance: 0,
+              network: '',
+              coin_name: searchedInfo.coin_name,
+              coin_id: searchedInfo.coin_id,
+            },
+          ];
+          console.log(1, dataResponse);
         }
         await dataResponse.save();
         const data = new UserDTO(dataResponse);

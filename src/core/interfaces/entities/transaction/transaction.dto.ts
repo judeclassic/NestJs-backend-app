@@ -10,6 +10,7 @@ class TransactionDto implements ITransaction {
   readonly transaction_id: string;
   readonly amount: number;
   readonly coin_type: CoinType;
+  readonly coin_id: string;
   readonly coin_name: string;
   transaction_status: TransactionStatusEnum;
   readonly transaction_type: TransactionType;
@@ -22,6 +23,7 @@ class TransactionDto implements ITransaction {
     this.transaction_id = trasaction.transaction_id;
     this.amount = trasaction.amount;
     this.coin_type = trasaction.coin_type;
+    this.coin_id = trasaction.coin_id;
     this.coin_name = trasaction.coin_name;
     this.transaction_status = trasaction.transaction_status;
     this.transaction_type = trasaction.transaction_type;
@@ -36,6 +38,7 @@ class TransactionDto implements ITransaction {
       transaction_id: this.transaction_id,
       amount: this.amount,
       coin_type: this.coin_type,
+      coin_id: this.coin_id,
       coin_name: this.coin_name,
       sender_wallet_address: this.sender_wallet_address,
       transaction_type: this.transaction_type,
@@ -50,7 +53,7 @@ class TransactionDto implements ITransaction {
       transaction_id: this.transaction_id,
       amount: this.amount,
       coin_type: this.coin_type,
-      coin_name: this.coin_name,
+      coin_id: this.coin_id,
       sender_wallet_address: this.sender_wallet_address,
       transaction_type: this.transaction_type,
       sender_public_key: this.sender_public_key,

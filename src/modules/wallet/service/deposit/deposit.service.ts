@@ -56,33 +56,34 @@ export class DepositService {
         );
       }
 
-      const verifiedTransaction =
-        await this.verificationService.verifyPaymentOnBtcWallet({
-          transaction_id: transaction_id,
-          wallet_address: user.wallet_address,
-          amount: amount,
-        });
+      // const verifiedTransaction =
+      //   await this.verificationService.verifyPaymentOnBtcWallet({
+      //     transaction_id: transaction_id,
+      //     wallet_address: user.wallet_address,
+      //     amount: amount,
+      //   });
 
-      if (verifiedTransaction.statusCode !== HttpStatus.OK) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            errors: verifiedTransaction.errors,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // if (verifiedTransaction.statusCode !== HttpStatus.OK) {
+      //   throw new HttpException(
+      //     {
+      //       statusCode: HttpStatus.BAD_REQUEST,
+      //       errors: verifiedTransaction.errors,
+      //     },
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
       const transactionRequest: Omit<ITransaction, '_id'> = {
         transaction_id,
         amount: amount,
         coin_type: CoinType.BTC,
-        coin_name: CoinType.BTC,
-        transaction_status: verifiedTransaction.data.status,
+        coin_id: CoinType.BTC,
+        coin_name: 'Bitcoin',
+        transaction_status: TransactionStatusEnum.successful, //verifiedTransaction.data.status,
         sender_wallet_address: user.wallet_address,
         transaction_type: TransactionType.deposit,
         sender_public_key: user.public_key,
-        master_wallet_address: verifiedTransaction.data.master_wallet,
+        master_wallet_address: '', //verifiedTransaction.data.master_wallet,
       };
 
       const transaction = await this.transactionService.createTransaction(
@@ -99,6 +100,10 @@ export class DepositService {
         );
       }
 
+      this.userService.updateBTCWalletMainAmount(user.wallet_address, {
+        amount,
+      });
+
       this.producerService.sendMessage<ITransactionForEvent>(
         UserEventEnum.user_deposited,
         transaction.data.toResponseForEvent(),
@@ -110,7 +115,7 @@ export class DepositService {
   fundBRC20Wallet: AuthResponseService<
     TFundOtherWalletRequest,
     TransactionDto
-  > = async ({ transaction_id, amount, coin_name }, user) => {
+  > = async ({ transaction_id, amount, coin_id, coin_name }, user) => {
     const isExisting = await this.transactionService.findTranction({
       transaction_id,
     });
@@ -125,30 +130,31 @@ export class DepositService {
       );
     }
 
-    const verifiedTransaction =
-      await this.verificationService.verifyPaymentOnBRC20({
-        transaction_id: transaction_id,
-        wallet_address: user.wallet_address,
-        amount: amount,
-        coin_name,
-      });
+    // const verifiedTransaction =
+    //   await this.verificationService.verifyPaymentOnBRC20({
+    //     transaction_id: transaction_id,
+    //     wallet_address: user.wallet_address,
+    //     amount: amount,
+    //     coin_name,
+    //   });
 
-    if (verifiedTransaction.statusCode !== HttpStatus.OK) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          errors: verifiedTransaction.errors,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    // if (verifiedTransaction.statusCode !== HttpStatus.OK) {
+    //   throw new HttpException(
+    //     {
+    //       statusCode: HttpStatus.BAD_REQUEST,
+    //       errors: verifiedTransaction.errors,
+    //     },
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
 
     const transactionRequest: Omit<ITransaction, '_id'> = {
       transaction_id,
       amount: amount,
       coin_type: CoinType.BRC20,
-      coin_name,
-      transaction_status: TransactionStatusEnum.pending,
+      coin_id: coin_id,
+      coin_name: coin_name,
+      transaction_status: TransactionStatusEnum.successful,
       sender_wallet_address: user.wallet_address,
       transaction_type: TransactionType.deposit,
       sender_public_key: user.public_key,
@@ -174,10 +180,10 @@ export class DepositService {
       transaction.data.toResponseForEvent(),
     );
 
-    // this.userService.updateOtherWalletPendingAmount(
-    //   { wallet_address: user.wallet_address, coin_name },
-    //   { amount: transaction.data.amount },
-    // );
+    this.userService.updateOtherWalletMainAmount(
+      { wallet_address: user.wallet_address, coin_id, coin_name },
+      { amount },
+    );
 
     return transaction;
   };
