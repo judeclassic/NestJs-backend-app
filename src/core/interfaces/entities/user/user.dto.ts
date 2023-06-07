@@ -31,6 +31,13 @@ export class PersonnalInformationDto implements IPersonalInformation {
     };
   };
 
+  toNormalResponse = () => {
+    return {
+      wallet_address: this.wallet_address,
+      public_key: this.public_key,
+    };
+  };
+
   setAccessToken = (access_token: string) => {
     this.access_token = access_token;
   };
@@ -108,6 +115,19 @@ export class UserDTO implements IUser {
     return {
       id: this._id,
       personal: this.personal.toResponse(),
+      btc_wallet: this.btc_wallet.toResponse(),
+      other_wallets: this.other_wallets.map((other_wallet) =>
+        other_wallet.toResponse(),
+      ),
+      created_at: this.created_at,
+      updated_at: this.updated_at,
+    } as IUserResponse;
+  };
+
+  public toNormalResponse = () => {
+    return {
+      id: this._id,
+      personal: this.personal.toNormalResponse(),
       btc_wallet: this.btc_wallet.toResponse(),
       other_wallets: this.other_wallets.map((other_wallet) =>
         other_wallet.toResponse(),

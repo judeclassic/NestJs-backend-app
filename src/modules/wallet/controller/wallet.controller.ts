@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { TViewAllMyTransactionRequest } from 'src/core/interfaces/request/transaction.request';
 import {
@@ -9,6 +9,7 @@ import {
   WithdrawBRC20WalletRequestDto,
 } from 'src/core/interfaces/request/wallet.request';
 import { EncryptionService } from 'src/core/services/encryption/encryption.service';
+import { UserService } from 'src/core/services/user/user.service';
 import { DepositService } from '../service/deposit/deposit.service';
 import { WalletService } from '../service/wallet.service';
 import { WithdrawService } from '../service/withdraw/withdraw.service';
@@ -17,10 +18,27 @@ import { WithdrawService } from '../service/withdraw/withdraw.service';
 export class WalletController {
   constructor(
     private readonly depositService: DepositService,
+    private readonly userService: UserService,
     private readonly withdrawService: WithdrawService,
     private readonly walletServive: WalletService,
     private readonly encryptionService: EncryptionService,
   ) {}
+
+  @Get('')
+  async getWalletInformation(@Req() request: Request) {
+    const jwToken = request.headers.authorization;
+    const authUser = this.encryptionService.verifyBearerToken(jwToken);
+    const userInformation = await this.userService.findOneByWalletAddress(
+      authUser.wallet_address,
+    );
+    if (userInformation.statusCode === HttpStatus.OK) {
+      return {
+        statusCode: userInformation.statusCode,
+        data: userInformation.data.toNormalResponse(),
+      };
+    }
+    return userInformation;
+  }
 
   @Post('fund-btc')
   async fundBtcWallet(
