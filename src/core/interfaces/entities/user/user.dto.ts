@@ -27,6 +27,7 @@ export class PersonnalInformationDto implements IPersonalInformation {
     return {
       wallet_address: this.wallet_address,
       public_key: this.public_key,
+      access_token: this.access_token,
     };
   };
 
