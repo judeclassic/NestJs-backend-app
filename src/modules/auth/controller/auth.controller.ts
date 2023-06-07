@@ -35,13 +35,9 @@ export class AuthController implements OnModuleInit {
   }
 
   @Post('connect')
-  async connectToWallet(
-    @Body() request: ConnectWalletRequestDto,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async connectToWallet(@Body() request: ConnectWalletRequestDto) {
     const user = await this.authService.connectWalletAddress(request);
     if (user.statusCode === HttpStatus.OK) {
-      response.cookie('authorization', user.data.personal.access_token);
       return { statusCode: HttpStatus.OK, data: user.data.toResponse() };
     }
     return user;
