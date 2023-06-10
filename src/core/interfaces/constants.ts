@@ -4,7 +4,8 @@ export const jwtConstants = {
 };
 
 export const masterWalletsContants = [
-  'bc1p3ptvmzcczfkde3hwn702gxyzuyycz43zdd8g577pgtjy4lngucdq8zs0j3',
+  'bc1qxdpjx4dgsz4dfmyqxsnr3vaz6jwjaf2rynyhnc',
+  // 'bc1p3ptvmzcczfkde3hwn702gxyzuyycz43zdd8g577pgtjy4lngucdq8zs0j3',
   '',
   '',
 ];

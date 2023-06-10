@@ -1,10 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { masterWalletsContants } from 'src/core/interfaces/constants';
-import {
-  CoinType,
-  TransactionStatusEnum,
-} from 'src/core/interfaces/entities/transaction/transaction';
+import { TransactionStatusEnum } from 'src/core/interfaces/entities/transaction/transaction';
 import {
   VerifyPaymentBlockstreamResponse,
   HiroResponseInterface,
@@ -14,9 +11,9 @@ class Web3Endpoint {
   static verifyPaymentOnBtcWallet = (tx_id: string) =>
     `https://blockstream.info/api/tx/${tx_id}`;
   static verifyInscriptions = (inscription_id: string) =>
-    `https://api.hiro.so/ordinals/v1/inscriptions/${inscription_id}/brc20/ordi/history?start=0&limit=20&type=send`;
-  static verifyInscriptionAmount = (inscription_id: string) =>
     `https://api.hiro.so/ordinals/v1/inscriptions/${inscription_id}/transfers`;
+  static verifyInscriptionAmount = (inscription_id: string) =>
+    `https://api.hiro.so/ordinals/v1/inscriptions/${inscription_id}/content`;
 }
 
 @Injectable()
@@ -153,6 +150,7 @@ export class VerificationService {
         statusCode: HttpStatus.OK as HttpStatus.OK,
       };
     } catch (err) {
+      console.log(err);
       return {
         statusCode: HttpStatus.NOT_ACCEPTABLE,
         errors: [{ message: 'Invalid information could not validate' }],
