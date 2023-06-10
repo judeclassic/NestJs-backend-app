@@ -7,13 +7,16 @@ import {
 } from 'src/core/interfaces/entities/transaction/transaction';
 import {
   VerifyPaymentBlockstreamResponse,
-  VerifyPaymentUnisatResponse,
+  HiroResponseInterface,
+  HiroAmountResponseInterface,
 } from 'src/core/interfaces/entities/verification/verification';
 class Web3Endpoint {
-  static verifyPaymentOnBtcWallet = (wallet_address: string) =>
-    `https://blockstream.info/api/tx/${wallet_address}`;
-  static verifyPaymentOnOtherWallet = (wallet_address: string) =>
-    `https://unisat.io/brc20-api-v2/address/${wallet_address}/brc20/ordi/history?start=0&limit=20&type=send`;
+  static verifyPaymentOnBtcWallet = (tx_id: string) =>
+    `https://blockstream.info/api/tx/${tx_id}`;
+  static verifyInscriptions = (inscription_id: string) =>
+    `https://api.hiro.so/ordinals/v1/inscriptions/${inscription_id}/brc20/ordi/history?start=0&limit=20&type=send`;
+  static verifyInscriptionAmount = (inscription_id: string) =>
+    `https://api.hiro.so/ordinals/v1/inscriptions/${inscription_id}/transfers`;
 }
 
 @Injectable()
@@ -96,60 +99,56 @@ export class VerificationService {
 
   verifyPaymentOnBRC20 = async (request: {
     transaction_id: string;
+    inscription_id: string;
     wallet_address: string;
     amount: number;
     coin_name: string;
   }) => {
     try {
-      const endpoint = `${Web3Endpoint.verifyPaymentOnOtherWallet(
-        request.wallet_address,
+      const endpoint = `${Web3Endpoint.verifyInscriptions(
+        request.inscription_id,
       )}`;
 
       const paymentResult = await axios.get(endpoint);
 
-      const inscriptionData: VerifyPaymentUnisatResponse = paymentResult.data;
-      if (inscriptionData.msg !== 'ok') {
+      const inscriptionData: HiroResponseInterface = paymentResult.data;
+      if (inscriptionData?.results.length < 1) {
         throw new HttpException(
-          { message: 'verification request was not successful contact admin' },
-          HttpStatus.INTERNAL_SERVER_ERROR,
+          { message: 'empty inscription during verification' },
+          HttpStatus.NOT_ACCEPTABLE,
         );
       }
 
-      const transaction = inscriptionData?.data?.detail?.find(
-        (tran) => tran.txid === request.transaction_id,
+      const transaction = inscriptionData?.results?.find(
+        (tran) => tran.address === masterWalletsContants[0],
       );
+
       if (!transaction) {
         return {
           statusCode: HttpStatus.NOT_ACCEPTABLE,
           errors: [
             {
-              message:
-                'this transaction was not performed by this account wallet address',
+              message: 'this transaction was not sent to the master wallet',
             },
           ],
         };
       }
 
-      const master_wallet = masterWalletsContants.find(
-        (master_wallet) => master_wallet === transaction.to,
-      );
+      const amountEndpoint = `${Web3Endpoint.verifyInscriptionAmount(
+        request.inscription_id,
+      )}`;
 
-      if (!master_wallet) {
-        return {
-          statusCode: HttpStatus.NOT_ACCEPTABLE,
-          errors: [
-            {
-              message: 'this transaction was not sent to your internal wallet',
-            },
-          ],
-        };
-      }
+      const amountPaymentResult = await axios.get(amountEndpoint);
+
+      const amountInscriptionData: HiroAmountResponseInterface =
+        amountPaymentResult.data;
+
       return {
         data: {
-          amount: transaction.amount,
+          amount: amountInscriptionData.amt,
           message: 'transaction was successful',
           status: TransactionStatusEnum.successful,
-          master_wallet,
+          master_wallet: masterWalletsContants[0],
         },
         statusCode: HttpStatus.OK as HttpStatus.OK,
       };
@@ -161,17 +160,17 @@ export class VerificationService {
     }
   };
 
-  verifyTransaction = (request: {
-    transaction_id: string;
-    wallet_address: string;
-    amount: number;
-    coin_name: string;
-  }) => {
-    if (request.coin_name === CoinType.BTC) {
-      return this.verifyPaymentOnBtcWallet(request);
-    }
-    return this.verifyPaymentOnBRC20(request);
-  };
+  // verifyTransaction = (request: {
+  //   transaction_id: string;
+  //   wallet_address: string;
+  //   amount: number;
+  //   coin_name: string;
+  // }) => {
+  //   if (request.coin_name === CoinType.BTC) {
+  //     return this.verifyPaymentOnBtcWallet(request);
+  //   }
+  //   return this.verifyPaymentOnBRC20(request);
+  // };
 
   private convertSatoshiToBitcoin = (satoshiValue: number) => {
     const bitCoinEstimation = satoshiValue / 1000000;

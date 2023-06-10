@@ -54,3 +54,27 @@ export type VerifyPaymentBlockstreamResponse = {
     block_time: number;
   };
 };
+
+export interface HiroResponseInterface {
+  limit: number;
+  offset: number;
+  total: number;
+  results: {
+    block_height: number;
+    block_hash: string;
+    address: string;
+    tx_id: string;
+    location: string;
+    output: string;
+    value: string;
+    offset: string;
+    timestamp: number;
+  }[];
+}
+
+export interface HiroAmountResponseInterface {
+  p: string;
+  op: string;
+  tick: string;
+  amt: number;
+}
