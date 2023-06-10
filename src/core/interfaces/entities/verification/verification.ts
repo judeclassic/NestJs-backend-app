@@ -76,5 +76,5 @@ export interface HiroAmountResponseInterface {
   p: string;
   op: string;
   tick: string;
-  amt: number;
+  amt: string;
 }

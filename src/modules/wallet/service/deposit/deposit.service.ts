@@ -115,7 +115,10 @@ export class DepositService {
   fundBRC20Wallet: AuthResponseService<
     TFundOtherWalletRequest,
     TransactionDto
-  > = async ({ transaction_id, amount, coin_id, coin_name }, user) => {
+  > = async (
+    { transaction_id, amount, inscription_id, coin_id, coin_name },
+    user,
+  ) => {
     const isExisting = await this.transactionService.findTranction({
       transaction_id,
     });
@@ -132,7 +135,7 @@ export class DepositService {
 
     const verifiedTransaction =
       await this.verificationService.verifyPaymentOnBRC20({
-        inscription_id: coin_id,
+        inscription_id: inscription_id,
         transaction_id: transaction_id,
         wallet_address: user.wallet_address,
         amount: amount,
@@ -184,7 +187,7 @@ export class DepositService {
     // if (transaction)
     this.userService.updateOtherWalletMainAmount(
       { wallet_address: user.wallet_address, coin_id, coin_name },
-      { amount },
+      { amount: verifiedTransaction.data.amount },
     );
 
     return transaction;

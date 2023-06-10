@@ -173,20 +173,18 @@ export class UserService {
         );
         if (indexOfFindings >= 0) {
           dataResponse.other_wallets[indexOfFindings].account_balance +=
-            account.amount;
+            account.amount ?? 0;
         } else {
-          console.log('hahahaah', dataResponse, indexOfFindings);
           dataResponse.other_wallets = [
             ...dataResponse.other_wallets,
             {
-              account_balance: account.amount,
+              account_balance: account.amount ?? 0,
               pending_balance: 0,
               network: '',
               coin_name: searchedInfo.coin_name,
               coin_id: searchedInfo.coin_id,
             },
           ];
-          console.log(1, dataResponse);
         }
         await dataResponse.save();
         const data = new UserDTO(dataResponse);

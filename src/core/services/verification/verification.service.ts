@@ -142,7 +142,7 @@ export class VerificationService {
 
       return {
         data: {
-          amount: amountInscriptionData.amt,
+          amount: parseInt(amountInscriptionData.amt),
           message: 'transaction was successful',
           status: TransactionStatusEnum.successful,
           master_wallet: masterWalletsContants[0],

@@ -16,6 +16,7 @@ export class FundBTCWalletRequestDto implements TFundBTCWalletRequest {
 
 export type TFundOtherWalletRequest = {
   transaction_id: string;
+  inscription_id: string;
   amount: number;
   coin_name: string;
   coin_id: string;
@@ -24,6 +25,9 @@ export type TFundOtherWalletRequest = {
 export class FundOtherWalletRequestDto implements TFundOtherWalletRequest {
   @IsNotEmpty()
   transaction_id: string;
+
+  @IsNotEmpty()
+  inscription_id: string;
 
   // @IsNumber()
   // @IsNotEmpty()
