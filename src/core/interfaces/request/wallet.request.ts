@@ -26,7 +26,7 @@ export class FundOtherWalletRequestDto implements TFundOtherWalletRequest {
   transaction_id: string;
 
   // @IsNumber()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   amount: number;
 
   @IsNotEmpty()
