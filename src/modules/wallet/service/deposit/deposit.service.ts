@@ -124,6 +124,8 @@ export class DepositService {
       transaction_id,
     });
 
+    console.log({ transaction_id, amount, inscription_id, coin_id, coin_name });
+
     if (isExisting.statusCode === HttpStatus.OK) {
       throw new HttpException(
         {
@@ -161,6 +163,8 @@ export class DepositService {
     const transaction = await this.transactionService.createTransaction(
       transactionRequest,
     );
+
+    console.log(transaction);
 
     if (transaction.statusCode !== HttpStatus.OK) {
       throw new HttpException(
