@@ -57,22 +57,22 @@ export class DepositService {
         );
       }
 
-      const verifiedTransaction =
-        await this.verificationService.verifyPaymentOnBtcWallet({
-          transaction_id: transaction_id,
-          wallet_address: user.wallet_address,
-          amount: amount,
-        });
+      // const verifiedTransaction =
+      //   await this.verificationService.verifyPaymentOnBtcWallet({
+      //     transaction_id: transaction_id,
+      //     wallet_address: user.wallet_address,
+      //     amount: amount,
+      //   });
 
-      if (verifiedTransaction.statusCode !== HttpStatus.OK) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            errors: verifiedTransaction.errors,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // if (verifiedTransaction.statusCode !== HttpStatus.OK) {
+      //   throw new HttpException(
+      //     {
+      //       statusCode: HttpStatus.BAD_REQUEST,
+      //       errors: verifiedTransaction.errors,
+      //     },
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
       const transactionRequest: Omit<ITransaction, '_id'> = {
         transaction_id,
