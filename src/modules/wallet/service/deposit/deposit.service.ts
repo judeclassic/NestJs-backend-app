@@ -21,6 +21,7 @@ import { UserEventEnum } from 'src/core/interfaces/event';
 import { ITransactionForEvent } from 'src/core/interfaces/response/wallet.reponse';
 import { ProducerService } from 'src/core/services/kafka/producer/kafka.service';
 import { VerificationService } from 'src/core/services/verification/verification.service';
+import { IAuthenticatedUser } from 'src/core/interfaces/entities/user/user';
 
 const ERROR_UNABLE_TRANSACTION: ErrorInterface = {
   message: 'unable to save your transaction on the blockchain',
@@ -133,6 +134,68 @@ export class DepositService {
       );
     }
 
+    // const interval = setInterval(async () => {
+    //   const verifyTransaction = await this.verifyTransactionAfterCron(
+    //     { transaction_id, amount, inscription_id, coin_id, coin_name },
+    //     user,
+    //   );
+
+    //   if (verifyTransaction.data) {
+    //     clearInterval(interval);
+    //   }
+    // }, 2 * 60 * 1000);
+
+    const transactionRequest: Omit<ITransaction, '_id'> = {
+      transaction_id,
+      amount: amount,
+      coin_type: CoinType.BRC20,
+      coin_id: coin_id,
+      coin_name: coin_name,
+      transaction_status: TransactionStatusEnum.successful,
+      sender_wallet_address: user.wallet_address,
+      transaction_type: TransactionType.deposit,
+      sender_public_key: user.public_key,
+      master_wallet_address: '',
+    };
+
+    const transaction = await this.transactionService.createTransaction(
+      transactionRequest,
+    );
+
+    if (transaction.statusCode !== HttpStatus.OK) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_MODIFIED,
+          errors: [ERROR_UNABLE_TRANSACTION],
+        },
+        transaction.statusCode,
+      );
+    }
+
+    this.producerService.sendMessage<ITransactionForEvent>(
+      UserEventEnum.user_deposited,
+      transaction.data.toResponseForEvent(),
+    );
+
+    // if (transaction)
+    this.userService.updateOtherWalletMainAmount(
+      { wallet_address: user.wallet_address, coin_id, coin_name },
+      { amount: amount },
+    );
+
+    return transaction;
+  };
+
+  verifyTransactionAfterCron = async (
+    {
+      transaction_id,
+      amount,
+      inscription_id,
+      coin_id,
+      coin_name,
+    }: TFundOtherWalletRequest,
+    user: IAuthenticatedUser,
+  ) => {
     const verifiedTransaction =
       await this.verificationService.verifyPaymentOnBRC20({
         inscription_id: inscription_id,
