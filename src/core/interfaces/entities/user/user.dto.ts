@@ -74,7 +74,7 @@ export class WalletInformationDto implements IWalletInformation {
       pending_balance: 0,
       network: 'BRC-20',
       coin_name: CoinType.BTC,
-      coin_id: '',
+      coin_id: CoinType.BTC,
     };
   };
 }
